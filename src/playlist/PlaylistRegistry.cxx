@@ -25,6 +25,7 @@
 #include "plugins/XspfPlaylistPlugin.hxx"
 #include "plugins/DespotifyPlaylistPlugin.hxx"
 #include "plugins/SoundCloudPlaylistPlugin.hxx"
+#include "plugins/DoubanFMPlaylistPlugin.hxx"
 #include "plugins/PlsPlaylistPlugin.hxx"
 #include "plugins/AsxPlaylistPlugin.hxx"
 #include "plugins/RssPlaylistPlugin.hxx"
@@ -59,6 +60,9 @@ const struct playlist_plugin *const playlist_plugins[] = {
 #endif
 #ifdef ENABLE_SOUNDCLOUD
 	&soundcloud_playlist_plugin,
+#endif
+#ifdef ENABLE_DOUBANFM
+	&doubanfm_playlist_plugin,
 #endif
 	&cue_playlist_plugin,
 	&embcue_playlist_plugin,

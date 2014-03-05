@@ -1312,6 +1312,13 @@ libplaylist_plugins_a_SOURCES += \
 PLAYLIST_LIBS += $(YAJL_LIBS)
 endif
 
+if ENABLE_DOUBANFM
+libplaylist_plugins_a_SOURCES += \
+	src/playlist/plugins/DoubanFMPlaylistPlugin.cxx \
+	src/playlist/plugins/DoubanFMPlaylistPlugin.hxx
+PLAYLIST_LIBS += $(YAJL_LIBS)
+endif
+
 if HAVE_EXPAT
 libplaylist_plugins_a_SOURCES += \
 	src/lib/expat/ExpatParser.cxx src/lib/expat/ExpatParser.hxx \

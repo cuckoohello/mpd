@@ -428,6 +428,11 @@ AC_ARG_ENABLE(soundcloud,
 		[enable support for soundcloud.com]),,
 	[enable_soundcloud=auto])
 
+AC_ARG_ENABLE(doubanfm,
+	AS_HELP_STRING([--enable-doubanfm],
+		[enable support for douban.fm]),,
+	[enable_doubanfm=auto])
+
 AC_ARG_ENABLE(lame-encoder,
 	AS_HELP_STRING([--enable-lame-encoder],
 		[enable the LAME mp3 encoder]),,
@@ -942,6 +947,21 @@ if test x$enable_soundcloud = xyes; then
 	AC_DEFINE(ENABLE_SOUNDCLOUD, 1, [Define when soundcloud is enabled])
 fi
 AM_CONDITIONAL(ENABLE_SOUNDCLOUD, test x$enable_soundcloud = xyes)
+AC_SUBST(YAJL_LIBS)
+
+dnl --------------------------------- DoubanFM ------------------------------
+if test x$enable_doubanfm != xno; then
+	PKG_CHECK_MODULES([YAJL], [yajl >= 2.0],
+		[found_doubanfm=yes],
+		AC_CHECK_LIB([yajl], [yajl_parse_complete],
+			[found_doubanfm=yes YAJL_CFLAGS=-DHAVE_YAJL1 YAJL_LIBS=-lyajl],
+			[found_doubanfm=no]))
+fi
+MPD_AUTO_RESULT([doubanfm], [douban.fm support], [libyajl not found])
+if test x$enable_doubanfm = xyes; then
+	AC_DEFINE(ENABLE_DOUBANFM, 1, [Define when doubanfm is enabled])
+fi
+AM_CONDITIONAL(ENABLE_DOUBANFM, test x$enable_doubanfm = xyes)
 AC_SUBST(YAJL_LIBS)
 
 dnl ---------------------------------- cdio ---------------------------------
@@ -1861,6 +1881,7 @@ results(curl,[CURL])
 results(smbclient,[SMBCLIENT])
 results(despotify,[Despotify])
 results(soundcloud,[Soundcloud])
+results(doubanfm,[DoubanFM])
 printf '\n\t'
 results(mms,[MMS])
 
