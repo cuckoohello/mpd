@@ -49,6 +49,7 @@ enum key {
 	Title,
 	Stream_URL,
 	ARTIST,
+	SID,
 	Other,
 };
 
@@ -57,6 +58,7 @@ const char* doubanfm_key_str[] = {
 	"title",
 	"url",
 	"artist",
+	"sid",
 	nullptr,
 };
 
@@ -68,6 +70,7 @@ struct parse_data {
 	char* artist;
 	int got_url; /* nesting level of last stream_url */
 
+	char* history;
 	std::forward_list<DetachedSong> songs;
 };
 
@@ -110,6 +113,20 @@ handle_string(void *ctx, const unsigned char* stringval,
 	case ARTIST:
 		g_free(data->artist);
 		data->artist = g_strndup(s, stringlen);
+		break;
+	case SID:
+		if (data->history == nullptr){
+			char* newsong = g_strndup(s, stringlen);
+			data->history = g_strconcat(newsong,":p",nullptr);
+			g_free(newsong);
+		}else{
+			char* origin = data->history;
+			char* newsong = g_strndup(s, stringlen);
+			data->history = g_strconcat(origin,"|",newsong,":p",nullptr);
+			g_free(origin);
+			g_free(newsong);
+		}
+
 		break;
 	default:
 		break;
@@ -212,15 +229,18 @@ class DoubanFMPlaylist final : public SongEnumerator {
 public:
 	DoubanFMPlaylist(char* _url, Mutex &_mutex, Cond &_cond)
 		:url(std::move(_url)), mutex(_mutex), cond(_cond) {
+		data.history = nullptr;
 	}
 
 	virtual ~DoubanFMPlaylist() {
 		g_free(url);
+		g_free(data.history);
 	}
 
 	int getNewSongs(){
 		Error error;
-		InputStream *input_stream = InputStream::OpenReady(url, mutex, cond,
+		char* realurl = g_strconcat(url, data.history, nullptr);
+		InputStream *input_stream = InputStream::OpenReady(realurl, mutex, cond,
 				error);
 		if (input_stream == nullptr) {
 			if (error.IsDefined())
@@ -281,6 +301,8 @@ public:
 		g_free(data.artist);
 
 		yajl_free(hand);
+
+		g_free(realurl);
 
 		return 0;
 	}
@@ -346,8 +368,8 @@ doubanfm_open_uri(const char *uri, Mutex &mutex, Cond &cond)
 	char *u = nullptr;
 	if (memcmp(uri, "channel/", 8) == 0) {
 		const char *rest = uri + 8;
-		u = g_strconcat("http://www.douban.com/j/app/radio/people?app_name=radio_desktop_win&version=100&user_id=&expire=&token=&sid=&h=&channel=",
-				rest, "&type=n", nullptr);
+		u = g_strconcat("http://www.douban.com/j/app/radio/people?app_name=radio_desktop_win&version=100&user_id=&expire=&token=&sid=&channel=",
+				rest, "&type=n&h=", nullptr);
 	} else if (memcmp(uri, "url/", 4) == 0) {
 		const char *rest = uri + 4;
 		u = g_strdup(rest);
