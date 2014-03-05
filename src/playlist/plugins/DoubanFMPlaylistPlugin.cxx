@@ -331,12 +331,14 @@ doubanfm_init(const config_param &param)
 	const char *passwd = param.GetBlockValue("password");
 	const char onceTotal = param.GetBlockValue("onceAdd", 20);
 
+	/* currently don't support personal channel
 	if (user == NULL || passwd == NULL) {
 		LogWarning(doubanfm_domain,
 			 "disabling the doubanfm playlist plugin "
 			 "because account is not configured");
 		return false;
 	}
+	*/
 
 	doubanfm_config.user = g_uri_escape_string(user, NULL, false);
 	doubanfm_config.password = g_uri_escape_string(passwd, NULL, false);
